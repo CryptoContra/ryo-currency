@@ -1303,7 +1303,7 @@ bool core::on_idle()
 			main_message = "The daemon is running offline and will not attempt to sync to the Ryo network.";
 		else
 			main_message = "The daemon will start synchronizing with the network. This may take a long time to complete.";
-			GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
+			GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_GREEN, "\n**********************************************************************\n",
 						   main_message,
 						   "\n\nYou can set the level of process detailization through \"set_log <level|categories>\" command,\n",
 						   "where <level> is between 0 (no details) and 4 (very verbose), or custom category based levels (eg, *:WARNING).\n\n",
@@ -1313,34 +1313,11 @@ bool core::on_idle()
 		m_starter_message_showed = true;
 	}
 
-	m_fork_moaner.do_call(boost::bind(&core::check_fork_time, this));
 	m_txpool_auto_relayer.do_call(boost::bind(&core::relay_txpool_transactions, this));
 	m_check_updates_interval.do_call(boost::bind(&core::check_updates, this));
 	m_check_disk_space_interval.do_call(boost::bind(&core::check_disk_space, this));
 	m_miner.on_idle();
 	m_mempool.on_idle();
-	return true;
-}
-//-----------------------------------------------------------------------------------------------
-bool core::check_fork_time()
-{
-	HardFork::State state = m_blockchain_storage.get_hard_fork_state();
-	switch(state)
-	{
-	case HardFork::LikelyForked:
-		GULPS_CAT_WARN("global", "**********************************************************************");
-		GULPS_CAT_WARN("global", "Last scheduled hard fork is too far in the past.");
-		GULPS_CAT_WARN("global", "We are most likely forked from the network. Daemon update needed now.");
-		GULPS_CAT_WARN("global", "**********************************************************************");
-		break;
-	case HardFork::UpdateNeeded:
-		GULPS_CAT_WARN("global", "**********************************************************************");
-		GULPS_CAT_WARN("global", "Last scheduled hard fork time shows a daemon update is needed soon.");
-		GULPS_CAT_WARN("global", "**********************************************************************");
-		break;
-	default:
-		break;
-	}
 	return true;
 }
 //-----------------------------------------------------------------------------------------------
